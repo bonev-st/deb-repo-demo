@@ -93,13 +93,27 @@ gpg --armor --export-secret-keys repo@example.com > myserver-repo-PRIVATE-KEY-KE
 
 Store this file encrypted and offline. Without it, you cannot sign future releases.
 
-### 4. Fill in config.sh
+### 4. Create config.sh from the example
 
-Edit `publish/config.sh` and set:
-- `REMOTE_HOST` — SSH hostname of your server
-- `REMOTE_USER` — your SSH username
-- `REMOTE_PORT` — SSH port
-- `GPG_KEY_ID` — fingerprint printed by `setup-gpg.sh`
+`config.sh` is not committed (it contains server credentials). Copy the
+provided template and fill in your values:
+
+```bash
+cd publish/
+cp config.sh.example config.sh
+```
+
+Then edit `config.sh` and set:
+
+| Variable | Description | Example |
+|---|---|---|
+| `REMOTE_HOST` | SSH hostname of your server | `myserver.com` |
+| `REMOTE_USER` | Your SSH username | `user_name` |
+| `REMOTE_PORT` | SSH port | `2021` |
+| `REMOTE_BASE` | Document root directory name for the APT subdomain | `apt.myserver.com` |
+| `GPG_KEY_EMAIL` | Email used when generating the GPG key | `repo@myserver.com` |
+| `GPG_KEY_ID` | Key fingerprint — fill in after running `setup-gpg.sh` | `ABCD1234...` |
+| `PUBKEY_NAME` | Key file basename (without `-public.gpg`) | `myserver-repo` |
 
 ### 5. First deployment
 

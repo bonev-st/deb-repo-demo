@@ -8,6 +8,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/config.sh"
+source "$SCRIPT_DIR/lib.sh"
 
 BOARD="${1:-}"
 YOCTO="${2:-}"
@@ -17,6 +18,12 @@ if [[ -z "$BOARD" || -z "$YOCTO" ]]; then
     echo "Usage: $0 <board> <yocto-version> [codename]" >&2
     exit 1
 fi
+
+require_config REMOTE_HOST REMOTE_USER REMOTE_PORT REMOTE_BASE
+require_cmds ssh rsync
+safe_component BOARD "$BOARD"
+safe_component YOCTO "$YOCTO"
+safe_component CODENAME "$CODENAME"
 
 STAGING="$STAGING_DIR/$BOARD/$YOCTO"
 SSH_OPTS="-p $REMOTE_PORT -o LogLevel=ERROR"
@@ -33,7 +40,7 @@ echo "==> Regenerating APT indices..."
 
 echo "==> Creating remote directories..."
 ssh $SSH_OPTS "$REMOTE" \
-    "mkdir -p $REMOTE_BASE/$BOARD/$YOCTO"
+    "mkdir -p '$REMOTE_BASE/$BOARD/$YOCTO'"
 
 # ── Step 3: Upload public key to repo root (idempotent) ──────────────────────
 

@@ -12,6 +12,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/config.sh"
+source "$SCRIPT_DIR/lib.sh"
 
 BOARD="${1:-}"
 YOCTO="${2:-}"
@@ -23,17 +24,11 @@ if [[ -z "$BOARD" || -z "$YOCTO" ]]; then
     exit 1
 fi
 
-if [[ -z "$GPG_KEY_ID" ]]; then
-    echo "ERROR: GPG_KEY_ID is not set in config.sh" >&2
-    echo "Run ./setup-gpg.sh first, then set GPG_KEY_ID in config.sh." >&2
-    exit 1
-fi
-
-if ! command -v apt-ftparchive &>/dev/null; then
-    echo "ERROR: apt-ftparchive not found. Install it with:" >&2
-    echo "  sudo apt install apt-utils" >&2
-    exit 1
-fi
+require_config GPG_KEY_ID
+require_cmds gpg apt-ftparchive gzip find
+safe_component BOARD "$BOARD"
+safe_component YOCTO "$YOCTO"
+safe_component CODENAME "$CODENAME"
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 
@@ -51,6 +46,7 @@ echo ""
 
 # ── Build staging pool ───────────────────────────────────────────────────────
 
+rm -rf "$POOL"
 mkdir -p "$POOL/oss" "$POOL/rz-graphics" "$POOL/rz-codecs" "$BINARY"
 
 copy_debs() {
@@ -70,7 +66,7 @@ copy_debs "$WORK_DIR/oss"         "$POOL/oss"         "oss"
 copy_debs "$WORK_DIR/rz-graphics" "$POOL/rz-graphics" "rz-graphics"
 copy_debs "$WORK_DIR/rz-codecs"   "$POOL/rz-codecs"   "rz-codecs"
 
-TOTAL=$(find "$POOL" -name "*.deb" | wc -l)
+TOTAL=$(find "$POOL" -type f -name "*.deb" | wc -l)
 echo "  Total: $TOTAL packages"
 echo ""
 
@@ -83,8 +79,10 @@ gzip -kf "$BINARY/Packages"
 # ── Generate Release ─────────────────────────────────────────────────────────
 
 echo "==> Generating Release..."
-(cd "$STAGING" && apt-ftparchive -c "$CONF" release "dists/$CODENAME" \
-    > "$RELEASE_DIR/Release")
+(cd "$STAGING" && apt-ftparchive -c "$CONF" \
+    -o APT::FTPArchive::Release::Suite="$CODENAME" \
+    -o APT::FTPArchive::Release::Codename="$CODENAME" \
+    release "dists/$CODENAME" > "$RELEASE_DIR/Release")
 
 # ── GPG sign ─────────────────────────────────────────────────────────────────
 

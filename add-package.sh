@@ -14,6 +14,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/config.sh"
+source "$SCRIPT_DIR/lib.sh"
 
 BOARD="${1:-}"
 YOCTO="${2:-}"
@@ -44,6 +45,14 @@ for f in "$@"; do
     fi
     dest="$(route_deb "$f")"
     fname="$(basename "$f")"
+    if command -v dpkg-deb &>/dev/null; then
+        arch=$(dpkg-deb --field "$f" Architecture 2>/dev/null) || { echo "SKIP: $f (unreadable .deb)" >&2; continue; }
+        if [[ "$arch" != "arm64" && "$arch" != "all" ]]; then
+            echo "SKIP: $f (wrong architecture: $arch)" >&2
+            continue
+        fi
+    fi
+    mkdir -p "$dest"
     cp -v "$f" "$dest/$fname"
     CHANGED=$((CHANGED + 1))
 done

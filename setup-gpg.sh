@@ -11,6 +11,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/config.sh"
+source "$SCRIPT_DIR/lib.sh"
+
+require_config GPG_KEY_EMAIL PUBKEY_NAME
+require_cmds gpg
 
 # ── If the key already exists, just export it ────────────────────────────────
 
@@ -43,6 +47,8 @@ Subkey-Length: 4096
 Name-Real: Renesas APT Repository
 Name-Email: $GPG_KEY_EMAIL
 Expire-Date: 0
+# The key is generated without a passphrase for unattended signing.
+# Keep the private key secure — anyone who obtains it can sign packages.
 %no-protection
 EOF
 

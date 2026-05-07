@@ -79,7 +79,6 @@ Your hosting control panel → **SSL/TLS** → **Let's Encrypt** → issue certi
 Run once on the dev host:
 
 ```bash
-cd publish/
 ./setup-gpg.sh
 ```
 
@@ -99,7 +98,6 @@ Store this file encrypted and offline. Without it, you cannot sign future releas
 provided template and fill in your values:
 
 ```bash
-cd publish/
 cp config.sh.example config.sh
 ```
 
@@ -118,7 +116,6 @@ Then edit `config.sh` and set:
 ### 5. First deployment
 
 ```bash
-cd publish/
 ./deploy.sh vk-d184280e 4.0.1
 ```
 
@@ -279,7 +276,7 @@ If `deploy.sh` is interrupted mid-transfer, simply re-run it:
 If the staging directory is stale or corrupt, delete it and regenerate:
 
 ```bash
-rm -rf publish/staging/vk-d184280e/4.0.1
+rm -rf staging/vk-d184280e/4.0.1
 ./deploy.sh vk-d184280e 4.0.1
 ```
 
@@ -292,7 +289,7 @@ rm -rf publish/staging/vk-d184280e/4.0.1
 | `work/oss/*.deb` | Yes — source of truth | Packages cannot be regenerated |
 | `work/rz-graphics/*.deb` | Yes | Same |
 | `work/rz-codecs/*.deb` | Yes | Same |
-| `publish/staging/` | No | Fully regenerable by `regenerate.sh` |
+| `staging/` | No | Fully regenerable by `regenerate.sh` |
 | GPG private key | **Critical** | Loss = cannot sign new releases |
 | GPG public key | Low priority | Re-exportable from keyring anytime |
 | Server files | Low priority | Fully regenerable from local packages + scripts |

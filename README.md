@@ -176,29 +176,54 @@ deb [arch=arm64 signed-by=/etc/apt/keyrings/myserver-repo.gpg] \
 
 ## Client APT Configuration
 
-Run the following on each target board (arm64):
+Run the following on each target board (arm64, as root or with sudo):
 
 ```bash
 # 1. Import the repository signing key
-curl -fsSL https://apt.example.com/repo-public.gpg \
-  | sudo gpg --dearmor -o /etc/apt/keyrings/myserver-repo.gpg
+curl -fsSL https://apt.x-cas.eu/repo-public.gpg \
+  | sudo gpg --dearmor -o /etc/apt/keyrings/xcas-repo.gpg
 
 # 2. Add the APT source
-echo "deb [arch=arm64 signed-by=/etc/apt/keyrings/myserver-repo.gpg] \
-  https://apt.example.com/vk-d184280e/4.0.1 trixie main" \
-  | sudo tee /etc/apt/sources.list.d/renesas-apt.list
+echo "deb [arch=arm64 signed-by=/etc/apt/keyrings/xcas-repo.gpg] \
+  https://apt.x-cas.eu/vk-d184280e/4.0.1 trixie main" \
+  | sudo tee /etc/apt/sources.list.d/renesas-custom.list
 
-# 3. Optional: pin Renesas packages to high priority
-sudo tee /etc/apt/preferences.d/renesas-apt <<'EOF'
-Package: *
+# 3. Pin Renesas packages so they always win over Debian packages
+sudo tee /etc/apt/preferences.d/renesas-pin <<'EOF'
+Package: kernel-image-* kernel-module-* devicetree libmmngr* libmmngrbuf* libvspm* mali-* gstreamer1.0 libgstallocators-1.0-0 libgstvideo-1.0-0 gstreamer1.0-omx* gstreamer1.0-plugin-vspmfilter*
 Pin: release l=renesas-custom
 Pin-Priority: 1001
 EOF
 
 # 4. Update and install
 sudo apt update
-sudo apt install kernel-image-image-6.1.141-cip43-yocto-standard mali-library
+sudo apt install \
+    kernel-image-6.1.141-cip43-yocto-standard \
+    kernel-module-mmngr kernel-module-mmngrbuf \
+    kernel-module-vspm kernel-module-vspmif \
+    libmmngr1 libmmngrbuf1 libvspm1 \
+    kernel-module-mali mali-library mali-gles mali-opencl \
+    gstreamer1.0-plugin-vspmfilter devicetree
 ```
+
+### Why priority 1001?
+
+APT priorities above 1000 cause a package to be installed even if it means
+downgrading an already-installed package. Renesas kernel and driver packages
+must take precedence over any identically-named Debian packages, so 1001 is
+the correct value. Do not lower it to 900 or 500 — those values only prefer
+the package when no other version is installed.
+
+### What the pin covers
+
+| Pattern | Packages |
+|---|---|
+| `kernel-image-*` | Renesas/Yocto kernel image |
+| `kernel-module-*` | mmngr, mmngrbuf, vspm, vspmif, Mali |
+| `devicetree` | Board device tree blobs |
+| `libmmngr*`, `libmmngrbuf*`, `libvspm*` | Memory manager and VSP userspace libs |
+| `mali-*` | Mali GPU userspace (library, GLES, OpenCL) |
+| `gstreamer1.0-plugin-vspmfilter` | VSP-accelerated GStreamer filter |
 
 ---
 

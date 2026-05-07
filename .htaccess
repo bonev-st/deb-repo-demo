@@ -1,0 +1,11 @@
+# APT repository root
+# Apache configuration for serving Debian packages
+
+# Enable directory listing (useful for browsing the repository)
+Options +Indexes
+
+# Correct MIME type for Debian binary packages
+AddType application/vnd.debian.binary-package .deb
+
+# Ensure compressed index files are served correctly
+AddType application/octet-stream .gz

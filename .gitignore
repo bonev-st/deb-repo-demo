@@ -1,0 +1,8 @@
+# Generated staging tree — do not commit
+staging/
+
+# Exported GPG keys — do not commit
+*.gpg
+config.sh
+
+.vscode/

@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# config.sh — shared configuration for publish scripts
+# Sourced by regenerate.sh, deploy.sh, add-package.sh, setup-gpg.sh
+# Edit this file to match your server and GPG setup before first use.
+
+# ── Server connection ────────────────────────────────────────────────────────
+
+# SSH hostname of your server.
+# Check your hosting control panel for the exact hostname and port.
+# Example: REMOTE_HOST="myserver.com"
+REMOTE_HOST=""
+
+# Your username
+# Example: REMOTE_USER="user_name"
+REMOTE_USER=""
+
+# SSH port
+# Example: REMOTE_PORT="2021"
+REMOTE_PORT=""
+
+# Document root for apt.myserver.com on the server.
+# Example: REMOTE_BASE="apt.myserver.com"
+# creates ~/apt.myserver.com/ when you add apt.myserver.com as a subdomain.
+REMOTE_BASE=""
+
+# ── GPG signing ──────────────────────────────────────────────────────────────
+
+# Email address used when generating the GPG key (see setup-gpg.sh)
+# Example: GPG_KEY_EMAIL="repo@myserver.com"
+GPG_KEY_EMAIL=""
+
+# Key ID — fill this in after running ./setup-gpg.sh (copy the fingerprint it prints)
+# Example: GPG_KEY_ID="ABCD1234EFGH5678IJKL9012MNOP3456QRST7890"
+GPG_KEY_ID=""
+
+# key name 
+# Example: myserver-repo
+PUBKEY_NAME=""
+
+# ── Local paths (do not edit) ────────────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORK_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+STAGING_DIR="$SCRIPT_DIR/staging"
+PUBKEY_FILE="$SCRIPT_DIR/$PUBKEY_NAME-public.gpg"
